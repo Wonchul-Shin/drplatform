@@ -1,5 +1,8 @@
 # 
 
+
+images/domain_info.png
+
 ## Model
 www.msaez.io/#/72932922/storming/drplatform
 
