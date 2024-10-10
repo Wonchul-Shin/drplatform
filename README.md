@@ -1,7 +1,7 @@
 # 
 
 
-images/domain_info.png
+![대체 텍스트](images/domain_info.png)
 
 ## Model
 www.msaez.io/#/72932922/storming/drplatform
