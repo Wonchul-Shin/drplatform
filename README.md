@@ -12,121 +12,24 @@
 ## Model
 www.msaez.io/#/72932922/storming/drplatform
 
-## 서비스 시나리오
+# 서비스 시나리오
+
+DR플랫폼
+
+기능적 요구사항 
+
 1. 관리자가 DR명령을 시작/종료할 수 있다.
 2. 고객이 현재 진행중인 멸영에 대하여 이행/불이행을 선택한다.
 3. 고나리자는 실행중인 명령을 종료한다.
 4. 명령이 종료되었을 때 한전에 전력사용량을 확인하고 실제 감축량만큼 유저의 포인트를 늘린다.
 
-### Make sure there is a Kafka server running
-```
-cd kafka
-docker-compose up
-```
-- Check the Kafka messages:
-```
-cd infra
-docker-compose exec -it kafka /bin/bash
-cd /bin
-./kafka-console-consumer --bootstrap-server localhost:9092 --topic
-```
-
-## Run the backend micro-services
-See the README.md files inside the each microservices directory:
-
-- dr
-- response
-- kepco
-- user
-
-
-## Run API Gateway (Spring Gateway)
-```
-cd gateway
-mvn spring-boot:run
-```
-
-## Test by API
-- dr
-```
- http :8088/drs id="id" name="name" type="type" status="status" date="date" 
-```
-- response
-```
- http :8088/responses id="id" userId="user_id" drId="dr_id" userCapacity="user_capacity" answer="answer" 
-```
-- kepco
-```
- http :8088/kepcos id="id" drId="dr_id" userId="user_id" responseId="response_id" responseAnswer="response_answer" adjustPoint="adjust_point" isReal="isReal" 
-```
-- user
-```
- http :8088/users id="id" name="name" point="point" capacity="capacity" 
-```
-
-
-## Run the frontend
-```
-cd frontend
-npm i
-npm run serve
-```
-
-## Test by UI
-Open a browser to localhost:8088
-
-## Required Utilities
-
-- httpie (alternative for curl / POSTMAN) and network utils
-```
-sudo apt-get update
-sudo apt-get install net-tools
-sudo apt install iputils-ping
-pip install httpie
-```
-
-- kubernetes utilities (kubectl)
-```
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-```
-
-- aws cli (aws)
-```
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
-```
-
-- eksctl 
-```
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-sudo mv /tmp/eksctl /usr/local/bin
-```
-
-# 서비스 시나리오
-
-AirBnB 커버하기
-
-기능적 요구사항
-1. 호스트가 임대할 숙소를 등록/수정/삭제한다.
-2. 고객이 숙소를 선택하여 예약한다.
-3. 예약과 동시에 결제가 진행된다.
-4. 예약이 되면 예약 내역(Message)이 전달된다.
-5. 고객이 예약을 취소할 수 있다.
-6. 예약 사항이 취소될 경우 취소 내역(Message)이 전달된다.
-7. 숙소에 후기(review)를 남길 수 있다.
-8. 전체적인 숙소에 대한 정보 및 예약 상태 등을 한 화면에서 확인 할 수 있다.(viewpage)
-
 비기능적 요구사항
-1. 트랜잭션
-    1. 결제가 되지 않은 예약 건은 성립되지 않아야 한다.  (Sync 호출)
 1. 장애격리
-    1. 숙소 등록 및 메시지 전송 기능이 수행되지 않더라도 예약은 365일 24시간 받을 수 있어야 한다  Async (event-driven), Eventual Consistency
-    1. 예약 시스템이 과중되면 사용자를 잠시동안 받지 않고 잠시 후에 하도록 유도한다  Circuit breaker, fallback
-1. 성능
-    1. 모든 방에 대한 정보 및 예약 상태 등을 한번에 확인할 수 있어야 한다  (CQRS)
-    1. 예약의 상태가 바뀔 때마다 메시지로 알림을 줄 수 있어야 한다  (Event driven)
+    1. 한전API등 각각의 서비스에 오류가 생겨도 핵심 서비스가 작동하도록 한다. 
+    2. 오류 발생 시 해당 마이크로서비스만 재시작하거나 복구할 수 있다.
+    3. 서비스를 컨테이너화 하여 오류 탐지 및 복구를 자동화하여 장애 대응 시간을 최소화한다. 
+2. 성능
+    1. 관리자는 모든 유저의 정보와 현재 진행중인 DR 그리고 응답정보를 한눈에 확인할 수 있어야 한다. 
 
 
 # 체크포인트
