@@ -340,12 +340,11 @@ public interface ResponseRepository extends PagingAndSortingRepository<Response,
 http POST :8082/startdr name="kt" type="reliable" status="running" date="2024-10-08"
  - startdr이 실행되면 resposne가 각 user 별 하나의 response가 만들어진다 (초기값 ignore)
 
-# response에 대한 거절처리 
+# response에 대한 승인처리 
 http PUT :8083/responses/2/accept
 
-# reservation 서비스의 예약 상태 확인
-http GET http://localhost:8088/reservations
-
+# response 확인
+http :8083/responses
 ```
 
 ## 동기식 호출(Sync) 과 Fallback 처리
