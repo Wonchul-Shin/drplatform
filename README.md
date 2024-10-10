@@ -58,7 +58,7 @@ www.msaez.io/#/72932922/storming/drplatform
 
 ### 바운디드 컨텍스트로 묶기
 
-![바운디드컨텍스트](imges/images/boundedcontext.png)
+![바운디드컨텍스트](images/boundedcontext.png)
 
 ### 폴리시 부착
 
