@@ -83,26 +83,11 @@ www.msaez.io/#/72932922/storming/drplatform
 
 # 구현:
 
-분석/설계 단계에서 도출된 헥사고날 아키텍처에 따라, 각 BC별로 대변되는 마이크로 서비스들을 스프링부트로 구현하였다. 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 808n 이다)
+분석/설계 단계에서 도출된 아키텍처에 따라, 각 BC별로 대변되는 마이크로 서비스들을 스프링부트로 구현하였다. 구현한 각 서비스를 로컬에서 실행하는 방법은 아래와 같다 (각자의 포트넘버는 8081 ~ 808n 이다)
 
 ```
    mvn spring-boot:run
 ```
-
-## CQRS
-
-숙소(Room) 의 사용가능 여부, 리뷰 및 예약/결재 등 총 Status 에 대하여 고객(Customer)이 조회 할 수 있도록 CQRS 로 구현하였다.
-- room, review, reservation, payment 개별 Aggregate Status 를 통합 조회하여 성능 Issue 를 사전에 예방할 수 있다.
-- 비동기식으로 처리되어 발행된 이벤트 기반 Kafka 를 통해 수신/처리 되어 별도 Table 에 관리한다
-- Table 모델링 (ROOMVIEW)
-
-  ![image](https://user-images.githubusercontent.com/77129832/119319352-4b198c00-bcb5-11eb-93bc-ff0657feeb9f.png)
-- viewpage MSA ViewHandler 를 통해 구현 ("RoomRegistered" 이벤트 발생 시, Pub/Sub 기반으로 별도 Roomview 테이블에 저장)
-  ![image](https://user-images.githubusercontent.com/77129832/119321162-4d7ce580-bcb7-11eb-9030-29ee6272c40d.png)
-  ![image](https://user-images.githubusercontent.com/31723044/119350185-fccab400-bcd9-11eb-8269-61868de41cc7.png)
-- 실제로 view 페이지를 조회해 보면 모든 room에 대한 전반적인 예약 상태, 결제 상태, 리뷰 건수 등의 정보를 종합적으로 알 수 있다
-  ![image](https://user-images.githubusercontent.com/31723044/119357063-1b34ad80-bce2-11eb-94fb-a587261ab56f.png)
-
 
 ## API 게이트웨이
       1. gateway 스프링부트 App을 추가 후 application.yaml내에 각 마이크로 서비스의 routes 를 추가하고 gateway 서버의 포트를 8080 으로 설정함
@@ -227,6 +212,7 @@ www.msaez.io/#/72932922/storming/drplatform
 
 # Correlation
 
+## 
 Airbnb 프로젝트에서는 PolicyHandler에서 처리 시 어떤 건에 대한 처리인지를 구별하기 위한 Correlation-key 구현을 
 이벤트 클래스 안의 변수로 전달받아 서비스간 연관된 처리를 정확하게 구현하고 있습니다. 
 
@@ -256,61 +242,101 @@ Airbnb 프로젝트에서는 PolicyHandler에서 처리 시 어떤 건에 대한
 
 ## DDD 의 적용
 
-- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다. (예시는 room 마이크로 서비스). 이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하려고 노력했다. 현실에서 발생가는한 이벤트에 의하여 마이크로 서비스들이 상호 작용하기 좋은 모델링으로 구현을 하였다.
+- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다. (예시는 DR Project의 핵심 도메인인 room 마이크로 서비스).
 
 ```
-package airbnb;
+ppackage drproject.domain;
 
+import drproject.ResponseApplication;
+import drproject.domain.AcceptChosen;
+import drproject.domain.DenyChosen;
+import drproject.domain.Listmade;
+import drproject.domain.Listsaved;
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.List;
 import javax.persistence.*;
-import org.springframework.beans.BeanUtils;
+import lombok.Data;
+import drproject.external.UserService;
+import drproject.external.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.PagedModel;
 
 @Entity
-@Table(name="Room_table")
-public class Room {
+@Table(name = "Response_table")
+@Data
+//<<< DDD / Aggregate Root
+public class Response {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private Long roomId;       // 방ID
-    private String status;     // 방 상태
-    private String desc;       // 방 상세 설명
-    private Long reviewCnt;    // 리뷰 건수
-    private String lastAction; // 최종 작업
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    private Long userId;
+    private String userName;
+    private String drId;
+    private String answer;
+    private Integer userCapacity;
 
-    public Long getRoomId() {
-        return roomId;
-    }
+    @PostPersist
+    public void onPostPersist() {
+        Listmade listmade = new Listmade(this);
+        listmade.publishAfterCommit();
+        
+        Listsaved listsaved = new Listsaved(this);
+        listsaved.publishAfterCommit();
 
-    public void setRoomId(Long roomId) {
-        this.roomId = roomId;
-    }
-    public String getStatus() {
-        return status;
-    }
+        if ("accept".equals(this.answer)) {
+            AcceptChosen acceptChosen = new AcceptChosen(this);
+            acceptChosen.publishAfterCommit();
+        }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
-    public String getDesc() {
-        return desc;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
-    public Long getReviewCnt() {
-        return reviewCnt;
+        if ("deny".equals(this.answer)) {
+            DenyChosen denyChosen = new DenyChosen(this);
+            denyChosen.publishAfterCommit();       
+         }
     }
 
-    public void setReviewCnt(Long reviewCnt) {
-        this.reviewCnt = reviewCnt;
-    }
-    public String getLastAction() {
-        return lastAction;
+    public static ResponseRepository repository() {
+        ResponseRepository responseRepository = ResponseApplication.applicationContext.getBean(
+            ResponseRepository.class
+        );
+        return responseRepository;
     }
 
-    public void setLastAction(String lastAction) {
-        this.lastAction = lastAction;
+    public static void makelist(DRstarted dRstarted) {
+        PagedModel<User> users = ResponseApplication.applicationContext
+        .getBean(drproject.external.UserService.class)
+        .getAllUsers();
+            for (User user :  users.getContent()) {
+                Response response = new Response();
+                response.setDrId(String.valueOf(dRstarted.getId())); 
+                response.setUserId(user.getId());
+                response.setUserName(user.getName());
+                response.setUserCapacity(user.getCapacity()); 
+                response.setAnswer("ignore");     
+                repository().save(response);
+            }
     }
+
+    public static void savelist(DrEnded drEnded) {
+        List<Response> responses = repository().findByDrId(String.valueOf(drEnded.getId()));
+        for (Response response : responses) {
+            Listsaved listsaved = new Listsaved(response);
+            listsaved.publishAfterCommit(); 
+        }
+    }
+    public static void updateResponse(ReductionCheck reductionCheck) {
+        if (!reductionCheck.getIsReal()) {
+            repository().findById(reductionCheck.getId()).ifPresent(response -> {
+                if (response.getId().equals(reductionCheck.getResponseId())) {
+                    System.out.println(response.userName + "did not execute reduction");
+                    response.setAnswer("deny");
+                    repository().save(response);
+                }
+            });
+        }
+    }
+
 }
 
 ```
