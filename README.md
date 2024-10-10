@@ -58,11 +58,11 @@ www.msaez.io/#/72932922/storming/drplatform
 
 ### 바운디드 컨텍스트로 묶기
 
-![바운디드컨텍스트](imges/boundedcontext.png)
+![바운디드컨텍스트](imges/images/boundedcontext.png)
 
 ### 폴리시 부착
 
-![폴리시부착](imges/policy.png) 
+![폴리시부착](images/policy.png) 
 
 ### 완성된 모형
 
