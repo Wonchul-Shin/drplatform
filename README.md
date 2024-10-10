@@ -212,32 +212,28 @@ www.msaez.io/#/72932922/storming/drplatform
 
 # Correlation
 
-## 
-Airbnb 프로젝트에서는 PolicyHandler에서 처리 시 어떤 건에 대한 처리인지를 구별하기 위한 Correlation-key 구현을 
-이벤트 클래스 안의 변수로 전달받아 서비스간 연관된 처리를 정확하게 구현하고 있습니다. 
+## DR프로젝트에서는 DR의 상태 변화에 따라 연관된 처리들이 이루어집니다.
 
-아래의 구현 예제를 보면
+#### 명령이 시작되면 req/res를 통해 user 정보를 받아와 response를 생성 
+![명령시작](images/code_startdr.png)
 
-예약(Reservation)을 하면 동시에 연관된 방(Room), 결제(Payment) 등의 서비스의 상태가 적당하게 변경이 되고,
-예약건의 취소를 수행하면 다시 연관된 방(Room), 결제(Payment) 등의 서비스의 상태값 등의 데이터가 적당한 상태로 변경되는 것을
-확인할 수 있습니다.
+#### 2 이행리스트 자동 생성 
+drId 1로 유저수만큼 response 생성 (초기값 ignore)
+![리스트 생성](images/code_reponse_list.png)
 
-예약등록
-![image](https://user-images.githubusercontent.com/31723044/119320227-54572880-bcb6-11eb-973b-a9a5cd1f7e21.png)
-예약 후 - 방 상태
-![image](https://user-images.githubusercontent.com/31723044/119320300-689b2580-bcb6-11eb-933e-98be5aadca61.png)
-예약 후 - 예약 상태
-![image](https://user-images.githubusercontent.com/31723044/119320390-810b4000-bcb6-11eb-8c62-48f6765c570a.png)
-예약 후 - 결제 상태
-![image](https://user-images.githubusercontent.com/31723044/119320524-a39d5900-bcb6-11eb-864b-173711eb9e94.png)
-예약 취소
-![image](https://user-images.githubusercontent.com/31723044/119320595-b6b02900-bcb6-11eb-8d8d-0d5c59603c72.png)
-취소 후 - 방 상태
-![image](https://user-images.githubusercontent.com/31723044/119320680-ccbde980-bcb6-11eb-8b7c-66315329aafe.png)
-취소 후 - 예약 상태
-![image](https://user-images.githubusercontent.com/31723044/119320747-dcd5c900-bcb6-11eb-9c44-fd3781c7c55f.png)
-취소 후 - 결제 상태
-![image](https://user-images.githubusercontent.com/31723044/119320806-ee1ed580-bcb6-11eb-8ccf-8c81385cc8ba.png)
+#### 3 이행 수락 
+![이행수락](images/code_response_accept.png)
+
+## 명령이 종료되면 이행정보의 사실 여부를 확인한 후 포인트 지급 
+
+#### 1 명령종료
+![명령종료](images/code_end.png)
+
+#### 2 kepco에서 사실여부 판단
+- point 지급 (accept를 선택하고 실제로 이행한 경우)
+- response 업데이트(accept를 선택했지만 실제로 이행하지 않은 경우)
+![명령시작](images/realtion_outcome.png)
+
 
 
 ## DDD 의 적용
