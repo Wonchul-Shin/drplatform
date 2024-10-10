@@ -62,7 +62,7 @@ www.msaez.io/#/72932922/storming/drplatform
 
 ### 폴리시 부착
 
-![폴리시부착](imges/policy.png)
+![폴리시부착](imges/policy.png) 
 
 ### 완성된 모형
 
