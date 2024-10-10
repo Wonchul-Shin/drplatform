@@ -245,23 +245,6 @@ Airbnb 프로젝트에서는 PolicyHandler에서 처리 시 어떤 건에 대한
 - 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다. (예시는 DR Project의 핵심 도메인인 room 마이크로 서비스).
 
 ```
-ppackage drproject.domain;
-
-import drproject.ResponseApplication;
-import drproject.domain.AcceptChosen;
-import drproject.domain.DenyChosen;
-import drproject.domain.Listmade;
-import drproject.domain.Listsaved;
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import javax.persistence.*;
-import lombok.Data;
-import drproject.external.UserService;
-import drproject.external.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.PagedModel;
-
 @Entity
 @Table(name = "Response_table")
 @Data
@@ -342,23 +325,23 @@ public class Response {
 ```
 - Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다
 ```
-package airbnb;
+package drproject;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
-@RepositoryRestResource(collectionResourceRel="rooms", path="rooms")
-public interface RoomRepository extends PagingAndSortingRepository<Room, Long>{
-
+@RepositoryRestResource(collectionResourceRel="responses", path="responses")
+public interface ResponseRepository extends PagingAndSortingRepository<Response, Long> {
 }
 ```
 - 적용 후 REST API 의 테스트
 ```
-# room 서비스의 room 등록
-http POST http://localhost:8088/rooms desc="Beautiful House"  
-
 # reservation 서비스의 예약 요청
-http POST http://localhost:8088/reservations roomId=1 status=reqReserve
+http POST :8082/startdr name="kt" type="reliable" status="running" date="2024-10-08"
+ - startdr이 실행되면 resposne가 각 user 별 하나의 response가 만들어진다 (초기값 ignore)
+
+# response에 대한 거절처리 
+http PUT :8083/responses/2/accept
 
 # reservation 서비스의 예약 상태 확인
 http GET http://localhost:8088/reservations
