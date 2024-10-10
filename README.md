@@ -40,23 +40,24 @@ www.msaez.io/#/72932922/storming/drplatform
 
 
 ### 이벤트 도출
-![대체 텍스트](images/event_storming_v1.png)
+![이벤트 도출](images/event_storming_v1.png)
 
 
 ### 부적격 이벤트 탈락
-![대체 텍스트](images/event_storming_v2.png)
+![부적격 이벤트 탈락](images/event_storming_v2.png)
 
     - 과정중 도출된 잘못된 도메인 이벤트들을 걸러내는 작업을 수행함
 
 ### 액터, 커맨드 부착하여 읽기 좋게
-![image](https://user-images.githubusercontent.com/15603058/119298993-113a8c80-bc99-11eb-9bae-4b911317d810.png)
+![엑터, 커맨드](images/actor+command.png)
 
 ### 어그리게잇으로 묶기
-![image](https://user-images.githubusercontent.com/15603058/119299589-2663eb00-bc9a-11eb-83b9-de7f3efe7548.png)
+![어그리게이트](images/aggregate.png)
 
-    - Room, Reservation, Payment, Review 은 그와 연결된 command 와 event 들에 의하여 트랜잭션이 유지되어야 하는 단위로 그들 끼리 묶어줌
+    - dr, user, response와 연결된 command 와 event 들에 의하여 트랜잭션이 유지되어야 하는 단위로 묶음
 
 ### 바운디드 컨텍스트로 묶기
+![바운디드컨텍스트](imges/boundedcontext.png)
 
 ![image](https://user-images.githubusercontent.com/15603058/119300858-6c21b300-bc9c-11eb-9b3f-c85aff51658f.png)
 
